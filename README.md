@@ -1,4 +1,15 @@
-# Unfined-Speech-and-Text-Emotion-recognition
+# Unified-Speech-and-Text-Emotion-recognition
+
+## Datasets references:
+- [EmoDB](http://www.emodb.bilderbar.info/download/) German: Audio and Text
+- [IEMOCAB](https://sail.usc.edu/iemocap/iemocap_release.htm) English: Audio, Visual and Text
+- [RAVADES](https://smartlaboratory.org/ravdess/) English: Audio and Visual 25GB.
+- [TESS](https://tspace.library.utoronto.ca/handle/1807/24487) English: Audio
+- [MSP-Improve](https://ecs.utdallas.edu/research/researchlabs/msp-lab/MSP-Improv.html) English: Audio, Visual
+- [MELD](https://affective-meld.github.io/) English: Text, Audio, Visual, 10GB
+- [OMGEmotion](https://github.com/knowledgetechnologyuhh/OMGEmotionChallenge) English: TOCHECK
+- [CREMA-D](https://github.com/CheyneyComputerScience/CREMA-D) English: Audio, Visual, Text
+- [RECOLA](https://diuf.unifr.ch/main/diva/recola/index.html) French: Audio, Visual
 
 ## Text model emotion recogition references:
 
