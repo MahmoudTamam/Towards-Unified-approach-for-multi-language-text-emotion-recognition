@@ -3,7 +3,7 @@
 ### Milestone I :star: Deadline: 8/11
 - [ ] Pytorch framework with class skeleton. (Ongoing / Tamam Deadline :5/11/2019)
 - [ ] Spanish | French | German Datasets Text and speech Survey.
-- [ ] Text Tokenizing tool evalution.
+- [ ] Text Tokenizing tool evalution and Text preprocessing.
 - [ ] Model skeleton implementation. (Ticket will be broken into multiple tasks by Tamam: Deadline :5/11/2019) 
 
 ## Datasets references:
