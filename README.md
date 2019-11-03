@@ -1,5 +1,11 @@
 # Unified-Speech-and-Text-Emotion-recognition
 
+### Milestone I :star: Deadline: 8/11
+- [ ] Pytorch framework with class skeleton. (Ongoing / Tamam Deadline :5/11/2019)
+- [ ] Spanish | French | German Datasets Text and speech Survey.
+- [ ] Text Tokenizing tool evalution.
+- [ ] Model skeleton implementation. (Ticket will be broken into multiple tasks by Tamam: Deadline :5/11/2019) 
+
 ## Datasets references:
 - [EmoDB](http://www.emodb.bilderbar.info/download/) German: Audio and Text
 - [IEMOCAB](https://sail.usc.edu/iemocap/iemocap_release.htm) English: Audio, Visual and Text
