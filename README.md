@@ -7,7 +7,7 @@
 - [ ] Model skeleton implementation. (Ticket will be broken into multiple tasks by Tamam: Deadline :5/11/2019) 
 
 ## Datasets references:
-- [EmoDB](http://www.emodb.bilderbar.info/download/) German: Audio and Text
+- [EmoDB](http://www.emodb.bilderbar.info/download/) German: Audio and Text --(Ayman) unable to download from server
 - [IEMOCAB](https://sail.usc.edu/iemocap/iemocap_release.htm) English: Audio, Visual and Text
 - [RAVADES](https://smartlaboratory.org/ravdess/) English: Audio and Visual 25GB.
 - [TESS](https://tspace.library.utoronto.ca/handle/1807/24487) English: Audio
