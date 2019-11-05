@@ -27,6 +27,9 @@
 
 ## Speech and text machine translation references:
 
+## Word embedding with emphasis on sentiment:
+- [Learning Sentiment-Specific Word Embedding for Twitter Sentiment Classification](https://www.aclweb.org/anthology/P14-1146/)
+
 
 ### Project milestones
 
