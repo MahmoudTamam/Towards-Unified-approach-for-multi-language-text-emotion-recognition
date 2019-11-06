@@ -1,0 +1,10 @@
+﻿Solution,,Languages,Description
+Language-independent-Emotion-Recognition-from-Speech,https://github.com/StrohmFn/Language-independent-Emotion-Recognition-from-Speech,English - French,Mono- and cross-lingual emotion classification in recorded speech through a convolutional neural network.
+Neural-Network-for-Emotion-Recognition-from-Speech,https://github.com/StraysWonderland/Neural-Network-for-Emotion-Recognition-from-Speech,English - French,Convolutional neural network for language-independend emotion classification from recorded speech
+Arabic_emotion_project,https://github.com/hasanhuz/Arabic_emotion_project,Arabic,Enabling Deep Learning of Emotion With First-Person Seed Expressions. Computational Modeling of People’s emotion in Social Media (PEOPLES)
+Arabic Emotion Dataset in Twitter,https://github.com/UBC-NLP/ara_emotion_naacl2018,,This repository provides our datasets for Arabic emotion detection in Twitter
+Emotion Recognition from Korean Text - 2017 Spring,https://github.com/lshhhhh/textual-emotion-recognition,Korean Text,Emotion recognition from Korean text
+text-emotion-recognition,https://github.com/hiroki-kyoto/text-emotion-recognition,Chinese,Using Information Gain to decide which words are keywords to determine the emotion of text. There's an application of comments classification.
+emotions_classifier_rus,https://github.com/zaphodbbrx/emotions_classifier_rus,Russian,Neural network based emotions recognition for translated russian texts 
+GP_EmotionRecognition_ArabicText,https://github.com/HayaLababidi/GP_ArabicTextEmotionRecognition,Arabic,Classifies emotion in arabic text into one of 8 categories using a CNN and charecter/word embedding charecter embedding is a work in progress while word embedding was done using aravec 
+emoji-sentiment-dataset,https://github.com/snakers4/emoji-sentiment-dataset/tree/master,,Multi-language Emoji Datasets
