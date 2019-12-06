@@ -1,16 +1,5 @@
 # Unified-Speech-and-Text-Emotion-recognition
 
-### Remaing tasks:
-- [ ] IEMOCAP Dataset.
-- [ ] Text preprocessing: punction removal, stopping words, spacy or NLTK preprocessing.
-- [ ] pretrained embedding layer.
-- [ ] Model improvement, Attention Mechanism, bidriectional GRU.
-- [ ] German Machine translation deployment.
-- [ ] Arabic Machine translation deployment.
-- [ ] Machine translation and English Classifier fusion.
-- [ ] Training on German and English Dataset.
-- [ ] Paper report.
-
 
 ## Datasets references:
 - [EmoDB](http://www.emodb.bilderbar.info/download/) German: Audio and Text --(Ayman) unable to download from server
