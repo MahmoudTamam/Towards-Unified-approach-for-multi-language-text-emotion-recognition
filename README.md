@@ -1,30 +1,16 @@
 # Unified-Speech-and-Text-Emotion-recognition
 
-### Milestone I :star: Deadline: 8/11
-- [x] IEMOCAB data acces on googlecolab.
-- [x] Pytorch framework preparation.
-- [x] Text model implementation.
-- [x] Machine translation survey.
-- [x] Spanish | French | German Datasets Text and speech Survey.
-
-### Milestone II: Training Experiment 1 :star: Deadline: 15/11
-- [ ] Text preprocessing, Dataloader and Word2vec.
-- [ ] Text Agent Implementation, Start training on GoogleColab: IEMOCAB.
-- [ ] Text model improvement v1.1.
-- [ ] Audio features procoessing, Audio Dataloader implementation.
-- [ ] Audio Model branch implementation.
-
-### Milestone III: Training Experiment 2 :star: Deadline: 22/11
-- [ ] Text model improvement v1.2.
-- [ ] Audio and Text Integration with Attention Experiment.
-- [ ] Audio Transcript block.
-
-### Milestone IV: Training Experiment 2 :star: Deadline: 29/11
-- [ ] Machine translation and Text/ MultiModel integration vs Survey.
-- [ ] MultiModel improvement
-
-### Final Milestone: Training Experiment 2 :star: Deadline: 6/12
+### Remaing tasks:
+- [ ] IEMOCAP Dataset.
+- [ ] Text preprocessing: punction removal, stopping words, spacy or NLTK preprocessing.
+- [ ] pretrained embedding layer.
+- [ ] Model improvement, Attention Mechanism, bidriectional GRU.
+- [ ] German Machine translation deployment.
+- [ ] Arabic Machine translation deployment.
+- [ ] Machine translation and English Classifier fusion.
+- [ ] Training on German and English Dataset.
 - [ ] Paper report.
+
 
 ## Datasets references:
 - [EmoDB](http://www.emodb.bilderbar.info/download/) German: Audio and Text --(Ayman) unable to download from server
