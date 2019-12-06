@@ -1,0 +1,42 @@
+{
+  "exp_name": "EMO_RECO_exp_0",
+  "agent": "SENTEMO_Agent",
+  "mode": "train",
+
+  "cuda": true,
+  "gpu_device": 0,
+  "seed": 1337,
+
+  "num_classes": 6,
+  "class_weights": "",
+
+  "vocab_size": 27664,
+  "embedding_dim": 256,
+  "n_layers": 1,
+  "hiddenUnits": 1024,
+  "bidirectional": false,
+  "bias": true,
+  "num_workers": 4,
+
+  "learning_rate": 1e-3,
+  "learning_rate_patience": 100,
+  "weight_decay": 1e-3,
+  "eps": 1e-8,
+  "betas": [0.9, 0.999],
+  "momentum": 0.99,
+
+  "batch_size": 384,
+  "max_epoch": 25,
+
+  "validate_every": 2,
+
+  "checkpoint_file": "checkpoint.pth.tar",
+
+  "data_loader": "Text_loader",
+  "data_type": "SENTEMO",
+  "data_mode": "Text",
+  "SENT_EMO_Path": "./data/SENTEMO.pkl",
+  "data_loader_workers": 4,
+  "pin_memory": true,
+  "async_loading": true
+}
