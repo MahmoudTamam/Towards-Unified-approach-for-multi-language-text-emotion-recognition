@@ -1,0 +1,7 @@
+regex
+torch
+fastBPE
+requests
+sacremoses
+subword_nmt
+textblob
