@@ -151,22 +151,22 @@ class TextDataLoader(data.Dataset):
                 pd_sad["text"] = sadness0_x + sadness1_x + sadness2_x
 
                 pd_anger["emotions"] = pd_anger["emotions"].apply(lambda x: x[1])
-                pd_anger["emotions"] = pd_anger["emotions"][pd_anger["emotions"] > 1]
+                pd_anger["emotions"] = pd_anger["emotions"][pd_anger["emotions"] > self.config.emo_threshold]
                 pd_anger = pd_anger.dropna()
                 pd_anger["emotions"] = pd_anger["emotions"].apply(lambda x: 0)
 
                 pd_joy["emotions"] = pd_joy["emotions"].apply(lambda x: x[1])
-                pd_joy["emotions"] = pd_joy["emotions"][pd_joy["emotions"] > 1]
+                pd_joy["emotions"] = pd_joy["emotions"][pd_joy["emotions"] > self.config.emo_threshold]
                 pd_joy = pd_joy.dropna()
                 pd_joy["emotions"] = pd_joy["emotions"].apply(lambda x: 1)
 
                 pd_fear["emotions"] = pd_fear["emotions"].apply(lambda x: x[1])
-                pd_fear["emotions"] = pd_fear["emotions"][pd_fear["emotions"] > 1]
+                pd_fear["emotions"] = pd_fear["emotions"][pd_fear["emotions"] > self.config.emo_threshold]
                 pd_fear = pd_fear.dropna()
                 pd_fear["emotions"] = pd_fear["emotions"].apply(lambda x: 2)
 
                 pd_sad["emotions"] = pd_sad["emotions"].apply(lambda x: x[1])
-                pd_sad["emotions"] = pd_sad["emotions"][pd_sad["emotions"] > 1]
+                pd_sad["emotions"] = pd_sad["emotions"][pd_sad["emotions"] > self.config.emo_threshold]
                 pd_sad = pd_sad.dropna()
                 pd_sad["emotions"] = pd_sad["emotions"].apply(lambda x: 3)
                 
@@ -176,6 +176,12 @@ class TextDataLoader(data.Dataset):
                 data["token_size"] = data["text"].apply(lambda x: len(x.split(' ')))
 
                 data = data.loc[data['token_size'] < 80].copy()
+
+                if self.config.remove_stopwords == True:
+                    nlp = spacy.load('en_core_web_sm')
+                    spacy_stopwords = spacy.lang.en.stop_words.STOP_WORDS
+                    data['text'].apply(lambda x: [item for item in x if item not in spacy_stopwords])
+
                 self.create_index(data["text"].values.tolist())
                 input_tensor = [[self.word2idx[s] for s in es.split(' ')]  for es in data["text"].values.tolist()]
                 max_length_inp = self.max_length(input_tensor)

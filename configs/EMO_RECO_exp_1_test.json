@@ -27,7 +27,7 @@
 
   "batch_size": 64,
   "max_epoch": 25,
-
+  "emo_threshold": 1,
   "validate_every": 2,
 
   "checkpoint_file": "checkpoint.pth.tar",
