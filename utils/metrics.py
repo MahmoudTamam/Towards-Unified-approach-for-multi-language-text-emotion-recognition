@@ -123,8 +123,7 @@ def accuracy(target, logit):
     return accuracy
 
 class Evaluate():
-
-    def va_dist(self, cls, prediction, target, va_df, binarizer, name='', silent=False):
+    def va_dist(cls, prediction, target, va_df, binarizer, name='', silent=False):
         """ Computes distance between actual and prediction through cosine distance """
         va_matrix = va_df.loc[binarizer.classes_][['valence','arousal']].values
         y_va = target.dot(va_matrix)
@@ -143,7 +142,7 @@ class Evaluate():
             'dist_stat': res
         }
 
-    def evaluate_class(self, cls, predictions, target, target2=None, silent=False):
+    def evaluate_class(cls, predictions, target, target2=None, silent=False):
         """ Compute only the predicted class """
         p_2_annotation = dict()
 
@@ -199,7 +198,7 @@ class Evaluate():
             'confusion_matrix': cm
         }
 
-    def predict_class(self, cls, X_train, y_train, X_test, y_test,
+    def predict_class(cls, X_train, y_train, X_test, y_test,
                       pipeline, silent=False, target2=None):
         """ Predicted class,then run some performance evaluation """
         pipeline.fit(X_train, y_train)
@@ -207,7 +206,7 @@ class Evaluate():
         print("predictions computed....")
         return cls.evaluate_class(predictions, y_test, target2, silent)
 
-    def evaluate_prob(self, cls, prediction, target_rank, target_class, binarizer, va_df, silent=False, target2=None):
+    def evaluate_prob(cls, prediction, target_rank, target_class, binarizer, va_df, silent=False, target2=None):
         """ Evaluate through probability """
         # Run normal class evaluator
         predict_class = binarizer.classes_[prediction.argmax(axis=1)]
@@ -285,7 +284,7 @@ class Evaluate():
         }
 
 
-    def predict_prob(self, cls, X_train, y_train, X_test, y_test, label_test, pipeline, binarizer, va_df, silent=False, target2=None):
+    def predict_prob(cls, X_train, y_train, X_test, y_test, label_test, pipeline, binarizer, va_df, silent=False, target2=None):
         """ Output predcations based on training and labels """
         pipeline.fit(X_train, y_train)
         predictions = pipeline.predict_proba(X_test)
@@ -293,7 +292,7 @@ class Evaluate():
         return cls.evaluate_prob(predictions[:,pred_to_mlb], y_test, label_test, binarizer, va_df, silent, target2)
 
 
-    def plot_confusion_matrix(self, cls, cm, my_tags, title='Confusion matrix', cmap=plt.cm.Blues):
+    def plot_confusion_matrix(cls, cm, my_tags, title='Confusion matrix', cmap=plt.cm.Blues):
         """ Plotting the confusion_matrix"""
         plt.rc('figure', figsize=(4, 4), dpi=100)
         plt.imshow(cm, interpolation='nearest', cmap=cmap)

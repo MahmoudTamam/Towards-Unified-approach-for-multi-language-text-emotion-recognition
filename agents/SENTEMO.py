@@ -85,7 +85,7 @@ class SENTEMO_Agent(BaseAgent):
             self.current_epoch = checkpoint['epoch']
             self.current_iteration = checkpoint['iteration']
             self.model.load_state_dict(checkpoint['state_dict'])
-            self.optimizer.load_state_dict(checkpoint['optimizer'])
+            #self.optimizer.load_state_dict(checkpoint['optimizer'])
 
             self.logger.info("Checkpoint loaded successfully from '{}' at (epoch {}) at (iteration {})\n"
                   .format(self.config.checkpoint_dir, checkpoint['epoch'], checkpoint['iteration']))
@@ -235,7 +235,7 @@ class SENTEMO_Agent(BaseAgent):
         Main test loop
         :return:
         """
-        tqdm_batch = tqdm(self.data_loader.test_loader, total=self.data_loader.valid_iterations,
+        tqdm_batch = tqdm(self.data_loader.test_loader, total=self.data_loader.test_iterations,
                     desc="Testing at -{}-".format(self.current_epoch))
 
         # set the model in evaluation mode
@@ -280,8 +280,10 @@ class SENTEMO_Agent(BaseAgent):
             # actual targets
             target_human_readable = ((x_raw,  targets))
 
-            emotion_dict = {0: 'anger', 1: 'fear', 2: 'joy', 3: 'love', 4: 'sadness', 5: 'surprise'}
-
+            if self.config.data_type == 'SENTEMO':
+                emotion_dict = {0: 'anger', 1: 'fear', 2: 'joy', 3: 'love', 4: 'sadness', 5: 'surprise'}
+            elif self.config.data_type == "SEM_EVAL_OC":
+                emotion_dict = {0: 'anger', 1: 'joy', 2: 'fear', 3: 'sadness'}
             # convert results into dataframe
             model_test_result = pd.DataFrame(predictions_human_readable[1],columns=["emotion"])
             test = pd.DataFrame(target_human_readable[1], columns=["emotion"])

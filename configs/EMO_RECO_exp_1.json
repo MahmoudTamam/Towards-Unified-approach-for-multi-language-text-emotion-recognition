@@ -1,5 +1,5 @@
 {
-  "exp_name": "EMO_RECO_exp_0",
+  "exp_name": "EMO_RECO_exp_1",
   "agent": "SENTEMO_Agent",
   "mode": "train",
 
@@ -7,11 +7,11 @@
   "gpu_device": 0,
   "seed": 1337,
 
-  "num_classes": 6,
+  "num_classes": 4,
   "class_weights": "",
 
   "vocab_size": 27664,
-  "embedding_dim": 256,
+  "embedding_dim": 300,
   "n_layers": 1,
   "hiddenUnits": 1024,
   "bidirectional": true,
@@ -25,7 +25,7 @@
   "betas": [0.9, 0.999],
   "momentum": 0.99,
 
-  "batch_size": 384,
+  "batch_size": 64,
   "max_epoch": 25,
 
   "validate_every": 2,
@@ -33,9 +33,19 @@
   "checkpoint_file": "checkpoint.pth.tar",
 
   "data_loader": "Text_loader",
-  "data_type": "SENTEMO",
-  "data_mode": "Text",
-  "SENT_EMO_Path": "./data/SENTEMO.pkl",
+  "data_type": "SEM_EVAL_OC",
+  "Train_OC_Anger": "./data/SemEval2018/English/EI-oc/training/EI-oc-En-anger-train.txt",
+  "Valid_OC_Anger": "./data/SemEval2018/English/EI-oc/development/2018-EI-oc-En-anger-dev.txt",
+  "Test_OC_Anger": "./data/SemEval2018/English/EI-oc/test-gold/2018-EI-oc-En-anger-test-gold.txt",
+  "Train_OC_Fear": "./data/SemEval2018/English/EI-oc/training/EI-oc-En-fear-train.txt",
+  "Valid_OC_Fear": "./data/SemEval2018/English/EI-oc/development/2018-EI-oc-En-fear-dev.txt",
+  "Test_OC_Fear": "./data/SemEval2018/English/EI-oc/test-gold/2018-EI-oc-En-fear-test-gold.txt",
+  "Train_OC_Joy": "./data/SemEval2018/English/EI-oc/training/EI-oc-En-joy-train.txt",
+  "Valid_OC_Joy": "./data/SemEval2018/English/EI-oc/development/2018-EI-oc-En-joy-dev.txt",
+  "Test_OC_Joy": "./data/SemEval2018/English/EI-oc/test-gold/2018-EI-oc-En-joy-test-gold.txt",
+  "Train_OC_Sadness": "./data/SemEval2018/English/EI-oc/training/EI-oc-En-sadness-train.txt",
+  "Valid_OC_Sadness": "./data/SemEval2018/English/EI-oc/development/2018-EI-oc-En-sadness-dev.txt",
+  "Test_OC_Sadness": "./data/SemEval2018/English/EI-oc/test-gold/2018-EI-oc-En-sadness-test-gold.txt",
   "data_loader_workers": 4,
   "pin_memory": true,
   "async_loading": true
