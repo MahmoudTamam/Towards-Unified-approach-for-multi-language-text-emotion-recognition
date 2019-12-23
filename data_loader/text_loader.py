@@ -11,7 +11,8 @@ from sklearn.preprocessing import LabelEncoder
 import numpy as np
 import pandas as pd
 import torchvision.transforms as standard_transforms
-
+from nltk.stem.snowball import SnowballStemmer
+import random
 
 class SENTEMO_Data(Dataset):
     def __init__(self, X, y, input_transform= None, target_transform = None):
@@ -173,6 +174,24 @@ class TextDataLoader(data.Dataset):
                 data = pd.concat([pd_anger, pd_joy, pd_fear, pd_sad], ignore_index=True)
 
                 data = data.sample(frac=1).reset_index(drop=True)
+
+                #data.to_csv('data_x.csv')
+                
+                # lowering case
+                if self.config.lower_case == True:
+                    data['text'] = data['text'].apply(lambda x: x.lower())
+                
+                # remove non-alpha 
+                if self.config.remove_nonalpha:
+                    data['text'] = data['text'].replace('[^a-zA-Z ]', '', regex=True)
+
+                # stemming
+                if self.config.stemming == True:
+                    snowball_stemmer = SnowballStemmer(language='english')
+                    data['text'] = data['text'].apply(lambda x: " ".join([snowball_stemmer.stem(word) for word in x.split(' ')]))
+                
+
+                #data.to_csv('data_x_2.csv')
                 data["token_size"] = data["text"].apply(lambda x: len(x.split(' ')))
 
                 data = data.loc[data['token_size'] < 80].copy()
@@ -181,7 +200,15 @@ class TextDataLoader(data.Dataset):
                     nlp = spacy.load('en_core_web_sm')
                     spacy_stopwords = spacy.lang.en.stop_words.STOP_WORDS
                     data['text'].apply(lambda x: [item for item in x if item not in spacy_stopwords])
+                    data.to_csv('data_x_stop.csv')
 
+                
+                if self.config.use_weighting_words == True:
+                    self.weighting_words = pd.read_csv(self.config.weighting_words)
+                    data = data.apply(self.add_weighting_words, axis=1)
+                    data.to_csv('data_weight.csv')            
+                
+                    
                 self.create_index(data["text"].values.tolist())
                 input_tensor = [[self.word2idx[s] for s in es.split(' ')]  for es in data["text"].values.tolist()]
                 max_length_inp = self.max_length(input_tensor)
@@ -231,6 +258,30 @@ class TextDataLoader(data.Dataset):
         
         else:
             raise Exception("Please specify in the json a specified mode in data_mode")
+    
+    def add_weighting_words(self, row):
+        row['text'] = row['text'] + ' ' + self.random_weighting_words(row['emotions'])
+        return row
+        
+    def random_weighting_words(self, emotion, k=10):
+        """
+        0: anger
+        1: joy
+        2: fear
+        3: sad
+        """
+        if emotion == 0:
+            emotion = 'anger'
+        elif emotion == 1:
+            emotion = 'joy'
+        elif emotion == 2:
+            emotion = 'fear'
+        elif emotion == 3: 
+            emotion = 'sadness'
+
+        df_words = self.weighting_words.loc[self.weighting_words['emotion'] == emotion, ['words']]
+        words = random.choices(df_words.iloc[0][0].split(' '), k=k)
+        return " ".join(words)
         
     def tokenize_en(self, text):
         # tokenizes the english text into a list of strings(tokens)

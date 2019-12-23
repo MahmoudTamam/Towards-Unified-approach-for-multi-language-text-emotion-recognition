@@ -11,7 +11,7 @@ from torch.autograd import Variable
 import torch.optim as optim
 from agents.base import BaseAgent
 from graphs.models.TRE_Encoder import Text_Encoder
-from data_loader.Text_loader import TextDataLoader
+from data_loader.text_loader import TextDataLoader
 from torch.optim import lr_scheduler
 from tensorboardX import SummaryWriter
 from utils.metrics import AverageMeter, AverageMeterList, accuracy, Evaluate

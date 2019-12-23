@@ -12,3 +12,4 @@ tensorboardX==1.2
 torch
 torchvision
 tqdm
+spacy

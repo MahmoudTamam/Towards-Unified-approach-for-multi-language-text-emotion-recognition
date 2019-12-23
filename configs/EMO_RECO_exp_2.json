@@ -1,7 +1,7 @@
 {
   "exp_name": "EMO_RECO_exp_2",
   "agent": "SENTEMO_Agent",
-  "mode": "train",
+  "mode": "test",
 
   "cuda": true,
   "gpu_device": 0,
@@ -25,6 +25,10 @@
   "betas": [0.9, 0.999],
   "momentum": 0.99,
   "remove_stopwords": true,
+  "stemming": false,
+  "remove_nonalpha": false,
+  "lower_case": false,
+  "use_weighting_words": true,
   "batch_size": 256,
   "max_epoch": 25,
 
