@@ -28,7 +28,7 @@
   "lower_case": true,
   "stemming": true,
   "remove_nonalpha": true,
-  "use_weighting_words": false,
+  "use_lexi_weight": false,
   "batch_size": 256,
   "max_epoch": 25,
 
@@ -50,7 +50,7 @@
   "Train_OC_Sadness": "./data/SemEval2018/English/EI-oc/training/EI-oc-En-sadness-train.txt",
   "Valid_OC_Sadness": "./data/SemEval2018/English/EI-oc/development/2018-EI-oc-En-sadness-dev.txt",
   "Test_OC_Sadness": "./data/SemEval2018/English/EI-oc/test-gold/2018-EI-oc-En-sadness-test-gold.txt",
-  "weighting_words": "./data/weighting_words.csv",
+  "emo_lexi_words": "./data/emo_lexi_words.csv",
   "data_loader_workers": 4,
   "pin_memory": true,
   "async_loading": true

@@ -28,7 +28,7 @@
   "stemming": false,
   "remove_nonalpha": false,
   "lower_case": false,
-  "use_weighting_words": true,
+  "use_lexi_weight": false,
   "batch_size": 256,
   "max_epoch": 25,
 

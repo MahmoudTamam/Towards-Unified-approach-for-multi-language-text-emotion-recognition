@@ -175,7 +175,6 @@ class TextDataLoader(data.Dataset):
 
                 data = data.sample(frac=1).reset_index(drop=True)
 
-                #data.to_csv('data_x.csv')
                 
                 # lowering case
                 if self.config.lower_case == True:
@@ -185,13 +184,6 @@ class TextDataLoader(data.Dataset):
                 if self.config.remove_nonalpha:
                     data['text'] = data['text'].replace('[^a-zA-Z ]', '', regex=True)
 
-                # stemming
-                if self.config.stemming == True:
-                    snowball_stemmer = SnowballStemmer(language='english')
-                    data['text'] = data['text'].apply(lambda x: " ".join([snowball_stemmer.stem(word) for word in x.split(' ')]))
-                
-
-                #data.to_csv('data_x_2.csv')
                 data["token_size"] = data["text"].apply(lambda x: len(x.split(' ')))
 
                 data = data.loc[data['token_size'] < 80].copy()
@@ -200,19 +192,30 @@ class TextDataLoader(data.Dataset):
                     nlp = spacy.load('en_core_web_sm')
                     spacy_stopwords = spacy.lang.en.stop_words.STOP_WORDS
                     data['text'].apply(lambda x: [item for item in x if item not in spacy_stopwords])
-                    data.to_csv('data_x_stop.csv')
 
+
+                if self.config.use_lexi_weight == True:
+                    self.emo_lexi_words = pd.read_csv(self.config.emo_lexi_words)
+                    data['anger'] = data.apply(lambda row: self.emo_lexi_count('anger', row['text']), axis=1)
+                    data['joy'] = data.apply(lambda row: self.emo_lexi_count('joy', row['text']), axis=1)
+                    data['fear'] = data.apply(lambda row: self.emo_lexi_count('fear', row['text']), axis=1)
+                    data['sad'] = data.apply(lambda row: self.emo_lexi_count('sad', row['text']), axis=1)
+
+                # stemming
+                if self.config.stemming == True:
+                    snowball_stemmer = SnowballStemmer(language='english')
+                    data['text'] = data['text'].apply(lambda x: " ".join([snowball_stemmer.stem(word) for word in x.split(' ')]))
                 
-                if self.config.use_weighting_words == True:
-                    self.weighting_words = pd.read_csv(self.config.weighting_words)
-                    data = data.apply(self.add_weighting_words, axis=1)
-                    data.to_csv('data_weight.csv')            
                 
-                    
                 self.create_index(data["text"].values.tolist())
                 input_tensor = [[self.word2idx[s] for s in es.split(' ')]  for es in data["text"].values.tolist()]
+
+                
                 max_length_inp = self.max_length(input_tensor)
                 input_tensor = [self.pad_sequences(x, max_length_inp) for x in input_tensor]
+                
+                input_tensor = np.concatenate((data[['anger', 'joy', 'fear', 'sad']].to_numpy(), np.array(input_tensor)), axis=1)
+                
                 emotions = list(set(data.emotions.unique()))
                 # binarizer
                 mlb = preprocessing.MultiLabelBinarizer()
@@ -259,30 +262,13 @@ class TextDataLoader(data.Dataset):
         else:
             raise Exception("Please specify in the json a specified mode in data_mode")
     
-    def add_weighting_words(self, row):
-        row['text'] = row['text'] + ' ' + self.random_weighting_words(row['emotions'])
-        return row
+    def emo_lexi_count(self, emotion, text):
+        df_lexi_words = self.emo_lexi_words.loc[self.emo_lexi_words['emotion'] == emotion, ['words']]
+        lexi_words = df_lexi_words.iloc[0][0].split(' ') if len(df_lexi_words) > 0  else 0
+        lexi_count = len([w for w in text.split() if w in lexi_words])
         
-    def random_weighting_words(self, emotion, k=10):
-        """
-        0: anger
-        1: joy
-        2: fear
-        3: sad
-        """
-        if emotion == 0:
-            emotion = 'anger'
-        elif emotion == 1:
-            emotion = 'joy'
-        elif emotion == 2:
-            emotion = 'fear'
-        elif emotion == 3: 
-            emotion = 'sadness'
+        return lexi_count
 
-        df_words = self.weighting_words.loc[self.weighting_words['emotion'] == emotion, ['words']]
-        words = random.choices(df_words.iloc[0][0].split(' '), k=k)
-        return " ".join(words)
-        
     def tokenize_en(self, text):
         # tokenizes the english text into a list of strings(tokens)
         return [tok.text for tok in self.tokenizer.tokenizer(text)]
