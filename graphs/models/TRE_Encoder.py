@@ -18,7 +18,6 @@ class Text_Encoder(nn.Module):
                                 bias=self.config.bias)
         
         self.n_directions = 2 if self.config.bidirectional else 1
-
         self.fc = nn.Linear(self.n_directions * self.config.hiddenUnits, self.config.num_classes)
         self.dropout = nn.Dropout(p=0.5)
         self.softmax =  nn.LogSoftmax(dim=1)

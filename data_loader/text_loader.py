@@ -11,7 +11,15 @@ from sklearn.preprocessing import LabelEncoder
 import numpy as np
 import pandas as pd
 import torchvision.transforms as standard_transforms
+import emoji
+import re
 
+emoji_pattern = re.compile("["
+                            u"\U0001F600-\U0001F64F"  # emoticons
+                            u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                            u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                            u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                                            "]+", flags=re.UNICODE)
 
 class SENTEMO_Data(Dataset):
     def __init__(self, X, y, input_transform= None, target_transform = None):
@@ -107,13 +115,13 @@ class TextDataLoader(data.Dataset):
                 self.config.vocab_size = len(self.word2idx)
             
 
-        elif config.data_type == "SEM_EVAL_OC":
+        elif config.data_type == "SEM_EVAL_OC" or config.data_type == "SEM_EVAL_OC_Translated" or config.data_type == "SEM_EVAL_OC_Translated_TestOnly":
             #Init
             self.word2idx = {}
             self.idx2word = {}
             self.vocab = set()
 
-            if self.config.mode == 'test':
+            if self.config.mode == 'test' and not config.data_type == "SEM_EVAL_OC_Translated":
                 self.word2idx   =   pickle.load(open(self.config.out_dir+'word2idx.pkl',"rb"))
                 self.idx2word   =   pickle.load(open(self.config.out_dir+'idx2word.pkl',"rb"))
                 self.vocab      =   pickle.load(open(self.config.out_dir+'vocab.pkl',"rb"))
@@ -125,7 +133,68 @@ class TextDataLoader(data.Dataset):
                 test = SENTEMO_Data(test_data, test_labels)
                 self.test_loader = DataLoader(test, batch_size=config.batch_size, shuffle=True, drop_last=True)
                 self.test_iterations = (len(test) + self.config.batch_size) // self.config.batch_size
+            elif self.config.mode == 'test' and config.data_type == "SEM_EVAL_OC_Translated_TestOnly":
+                self.word2idx   =   pickle.load(open(self.config.out_dir+'word2idx.pkl',"rb"))
+                self.idx2word   =   pickle.load(open(self.config.out_dir+'idx2word.pkl',"rb"))
+                self.vocab      =   pickle.load(open(self.config.out_dir+'vocab.pkl',"rb"))
+                vocab_size      =   pickle.load(open(self.config.out_dir+'vocab_size.pkl',"rb"))
+                self.config.vocab_size = vocab_size['embedded_dim']
+                
+                test_data = np.load(self.config.out_dir+'test_data_es.npy')
+                test_labels = np.load(self.config.out_dir+'test_labels_es.npy')
+                test = SENTEMO_Data(test_data, test_labels)
+                self.test_loader = DataLoader(test, batch_size=config.batch_size, shuffle=True, drop_last=True)
+                self.test_iterations = (len(test) + self.config.batch_size) // self.config.batch_size
+            
+            elif self.config.mode == 'test' and config.data_type == "SEM_EVAL_OC_Translated":
+                data = pd.read_csv(self.config.translated_data)
+                if self.config.remove_emoji == 'remove':
+                    data['text'] = data['text'].apply(lambda x: emoji_pattern.sub(r'', x))
+                elif self.config.remove_emoji == 'replace':
+                    data['text'] = data['text'].apply(lambda x:emoji.demojize(x) )
+                
+                if self.config.spacy_token_preprocess == True:
+                    if self.config.lang == 'en':
+                        nlp = spacy.load('en_core_web_sm')
+                    elif self.config.lang == 'es':
+                        nlp = spacy.load('es_core_news_md')
+                    tokenizer = spacy.tokenizer.Tokenizer(nlp.vocab)
+                    data['text'] = data['text'].apply(lambda x: ' '.join([token.text_with_ws for token in nlp(x)]))
+                
+                if self.config.remove_capital == True:
+                    data['text'] = data['text'].apply(lambda x: ' '.join([word.lower() for word in x.split()]))
+                
+                if self.config.remove_stopwords == True:
+                    if self.config.lang == 'en':
+                        nlp = spacy.load('en_core_web_sm')
+                        spacy_stopwords = spacy.lang.en.stop_words.STOP_WORDS
+                    elif self.config.lang == 'es':
+                        nlp = spacy.load('es_core_news_md')
+                        spacy_stopwords = spacy.lang.es.stop_words.STOP_WORDS
+                    
+                    data['text'] = data['text'].apply(lambda x: ' '.join([word for word in x.split() if word not in (spacy_stopwords)]))
 
+                data["token_size"] = data["text"].apply(lambda x: len(x.split(' ')))
+                
+                data = data.loc[data['token_size'] < 80].copy()
+                self.word2idx   =   pickle.load(open(self.config.out_dir+'word2idx.pkl',"rb"))
+                self.idx2word   =   pickle.load(open(self.config.out_dir+'idx2word.pkl',"rb"))
+                self.vocab      =   pickle.load(open(self.config.out_dir+'vocab.pkl',"rb"))
+                vocab_size      =   pickle.load(open(self.config.out_dir+'vocab_size.pkl',"rb"))
+                self.config.vocab_size = vocab_size['embedded_dim']
+                #self.create_index(data["text"].values.tolist())
+                input_tensor = [[self.word2idx[s] for s in es.split(' ') if s in self.word2idx.keys()]  for es in data["text"].values.tolist()]
+                max_length_inp = self.max_length(input_tensor)
+                input_tensor = [self.pad_sequences(x, max_length_inp) for x in input_tensor]
+                emotions = list(set(data.emotions.unique()))
+                # binarizer
+                mlb = preprocessing.MultiLabelBinarizer()
+                data_labels =  [set(emos) & set(emotions) for emos in data[['emotions']].values]
+                bin_emotions = mlb.fit_transform(data_labels)
+                target_tensor = np.array(bin_emotions.tolist())
+                test = SENTEMO_Data(input_tensor, target_tensor)
+                self.test_loader = DataLoader(test, batch_size=config.batch_size, shuffle=True, drop_last=True,)
+                self.test_iterations = (len(test) + self.config.batch_size) // self.config.batch_size
             else:
                 anger0_x, anger0_y          = self.parse_oc(self.config.Train_OC_Anger)
                 anger1_x, anger1_y          = self.parse_oc(self.config.Valid_OC_Anger)
@@ -173,14 +242,36 @@ class TextDataLoader(data.Dataset):
                 data = pd.concat([pd_anger, pd_joy, pd_fear, pd_sad], ignore_index=True)
 
                 data = data.sample(frac=1).reset_index(drop=True)
-                data["token_size"] = data["text"].apply(lambda x: len(x.split(' ')))
 
-                data = data.loc[data['token_size'] < 80].copy()
-
+                if self.config.remove_emoji == 'remove':
+                    data['text'] = data['text'].apply(lambda x: emoji_pattern.sub(r'', x))
+                elif self.config.remove_emoji == 'replace':
+                    data['text'] = data['text'].apply(lambda x:emoji.demojize(x) )
+                
+                if self.config.spacy_token_preprocess == True:
+                    if self.config.lang == 'en':
+                        nlp = spacy.load('en_core_web_sm')
+                    elif self.config.lang == 'es':
+                        nlp = spacy.load('es_core_news_md')
+                    tokenizer = spacy.tokenizer.Tokenizer(nlp.vocab)
+                    data['text'] = data['text'].apply(lambda x: ' '.join([token.text_with_ws for token in nlp(x)]))
+                
+                if self.config.remove_capital == True:
+                    data['text'] = data['text'].apply(lambda x: ' '.join([word.lower() for word in x.split()]))
+                
                 if self.config.remove_stopwords == True:
-                    nlp = spacy.load('en_core_web_sm')
-                    spacy_stopwords = spacy.lang.en.stop_words.STOP_WORDS
-                    data['text'].apply(lambda x: [item for item in x if item not in spacy_stopwords])
+                    if self.config.lang == 'en':
+                        nlp = spacy.load('en_core_web_sm')
+                        spacy_stopwords = spacy.lang.en.stop_words.STOP_WORDS
+                    elif self.config.lang == 'es':
+                        nlp = spacy.load('es_core_news_md')
+                        spacy_stopwords = spacy.lang.es.stop_words.STOP_WORDS
+                    
+                    data['text'] = data['text'].apply(lambda x: ' '.join([word for word in x.split() if word not in (spacy_stopwords)]))
+
+                data["token_size"] = data["text"].apply(lambda x: len(x.split(' ')))
+                
+                data = data.loc[data['token_size'] < 80].copy()
 
                 self.create_index(data["text"].values.tolist())
                 input_tensor = [[self.word2idx[s] for s in es.split(' ')]  for es in data["text"].values.tolist()]
@@ -213,7 +304,6 @@ class TextDataLoader(data.Dataset):
                 self.test_iterations = (len(test) + self.config.batch_size) // self.config.batch_size
                 
                 self.config.vocab_size = len(self.word2idx)
-
         elif self.config.data_type == 'IEMOCAP':
             raise NotImplementedError("This mode is not implemented YET")
             #utterances, videoSpeakers, videoLabels, videoText, videoAudio, videoVisual, transcripts, scripts, testVid = self.load_from_pickle(directory=self.config.pickle_path, encoding=self.config.pickle_encoding)

@@ -1,5 +1,5 @@
 {
-  "exp_name": "EMO_RECO_exp_2",
+  "exp_name": "EMO_RECO_exp_3",
   "agent": "SENTEMO_Agent",
   "mode": "train",
 
@@ -25,7 +25,8 @@
   "betas": [0.9, 0.999],
   "momentum": 0.99,
   "remove_stopwords": true,
-  "remove_capital": false,
+  "remove_capital": true,
+  "spacy_token_preprocess": true,
   "batch_size": 256,
   "max_epoch": 25,
 

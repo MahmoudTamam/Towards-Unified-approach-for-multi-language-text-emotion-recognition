@@ -1,11 +1,11 @@
 {
-  "exp_name": "EMO_RECO_exp_2",
+  "exp_name": "EMO_RECO_exp_3_bidirectional",
   "agent": "SENTEMO_Agent",
   "mode": "train",
 
   "cuda": true,
   "gpu_device": 0,
-  "seed": 1367,
+  "seed": 1369,
 
   "num_classes": 4,
   "class_weights": "",
@@ -14,7 +14,7 @@
   "embedding_dim": 300,
   "n_layers": 1,
   "hiddenUnits": 1024,
-  "bidirectional": false,
+  "bidirectional": true,
   "bias": true,
   "num_workers": 4,
   "emo_threshold": 0,
@@ -25,9 +25,10 @@
   "betas": [0.9, 0.999],
   "momentum": 0.99,
   "remove_stopwords": true,
-  "remove_capital": false,
-  "batch_size": 256,
-  "max_epoch": 25,
+  "remove_capital": true,
+  "spacy_token_preprocess": true,
+  "batch_size": 128,
+  "max_epoch": 35,
 
   "validate_every": 2,
 

@@ -282,7 +282,7 @@ class SENTEMO_Agent(BaseAgent):
 
             if self.config.data_type == 'SENTEMO':
                 emotion_dict = {0: 'anger', 1: 'fear', 2: 'joy', 3: 'love', 4: 'sadness', 5: 'surprise'}
-            elif self.config.data_type == "SEM_EVAL_OC":
+            elif self.config.data_type == "SEM_EVAL_OC" or "SEM_EVAL_OC_Translated":
                 emotion_dict = {0: 'anger', 1: 'joy', 2: 'fear', 3: 'sadness'}
             # convert results into dataframe
             model_test_result = pd.DataFrame(predictions_human_readable[1],columns=["emotion"])
