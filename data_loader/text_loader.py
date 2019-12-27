@@ -13,6 +13,10 @@ import pandas as pd
 import torchvision.transforms as standard_transforms
 from nltk.stem.snowball import SnowballStemmer
 import random
+import emoji
+import re
+import nltk
+from nltk.tokenize import word_tokenize
 
 class SENTEMO_Data(Dataset):
     def __init__(self, X, y, input_transform= None, target_transform = None):
@@ -172,17 +176,35 @@ class TextDataLoader(data.Dataset):
                 pd_sad["emotions"] = pd_sad["emotions"].apply(lambda x: 3)
                 
                 data = pd.concat([pd_anger, pd_joy, pd_fear, pd_sad], ignore_index=True)
+                data.to_csv('data.csv', index=False)
+                raise NotImplementedError("")
 
                 data = data.sample(frac=1).reset_index(drop=True)
 
-                
+
                 # lowering case
-                if self.config.lower_case == True:
-                    data['text'] = data['text'].apply(lambda x: x.lower())
+                data['text'] = data['text'].apply(lambda x: x.lower())
+
+                # remove user's tags
+                data['text'] = data['text'].apply(lambda x: re.sub('@[^\s]+', '', x))
+
+                # remove # in hashtags
+                data['text'] = data['text'].apply(lambda x: re.sub(r'#([^\s]+)', r'\1', x))
                 
-                # remove non-alpha 
-                if self.config.remove_nonalpha:
-                    data['text'] = data['text'].replace('[^a-zA-Z ]', '', regex=True)
+
+                # replace emoji with words - 
+                
+                data['text'] = data['text'].apply(lambda x: emoji.demojize(x))
+                
+                # remove non alphabetic chars
+                data['text'] = data['text'].replace('[^a-zA-Z ]', '', regex=True)
+
+                # remove multiple spaces
+                data['text'] = data['text'].apply(lambda x: re.sub(' +',' ',x))
+                
+                # remove repeated chars
+                nltk.download('punkt')
+                data['text'] = data['text'].apply(lambda x: " ".join(word_tokenize(x)).strip())
 
                 data["token_size"] = data["text"].apply(lambda x: len(x.split(' ')))
 
@@ -206,7 +228,8 @@ class TextDataLoader(data.Dataset):
                     snowball_stemmer = SnowballStemmer(language='english')
                     data['text'] = data['text'].apply(lambda x: " ".join([snowball_stemmer.stem(word) for word in x.split(' ')]))
                 
-                
+                #data.to_csv('data.csv', index=False)
+
                 self.create_index(data["text"].values.tolist())
                 input_tensor = [[self.word2idx[s] for s in es.split(' ')]  for es in data["text"].values.tolist()]
 
@@ -214,8 +237,10 @@ class TextDataLoader(data.Dataset):
                 max_length_inp = self.max_length(input_tensor)
                 input_tensor = [self.pad_sequences(x, max_length_inp) for x in input_tensor]
                 
-                input_tensor = np.concatenate((data[['anger', 'joy', 'fear', 'sad']].to_numpy(), np.array(input_tensor)), axis=1)
+                input_tensor = np.concatenate((data[['token_size', 'anger', 'joy', 'fear', 'sad']].to_numpy(), np.array(input_tensor)), axis=1)
                 
+                
+
                 emotions = list(set(data.emotions.unique()))
                 # binarizer
                 mlb = preprocessing.MultiLabelBinarizer()
@@ -268,7 +293,7 @@ class TextDataLoader(data.Dataset):
         lexi_count = len([w for w in text.split() if w in lexi_words])
         
         return lexi_count
-
+    
     def tokenize_en(self, text):
         # tokenizes the english text into a list of strings(tokens)
         return [tok.text for tok in self.tokenizer.tokenizer(text)]
