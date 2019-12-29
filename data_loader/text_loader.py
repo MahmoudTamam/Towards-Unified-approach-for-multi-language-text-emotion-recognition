@@ -14,6 +14,17 @@ import torchvision.transforms as standard_transforms
 import emoji
 import re
 
+"""
+1- #Update results in abstract, Data preprocessing steps, accuracy metrics and graphs, data expolration --- Conclusion
+2- Seperate train/test/val files
+3- Validation batch 1
+4- Make sure of steps
+5- Spacy lemmitatization/ NLTK Stemming
+6- Emotion lemicon
+7- Train with Extra data SENTEMO :D  "To merge"
+8- Upgrade model
+"""
+
 emoji_pattern = re.compile("["
                             u"\U0001F600-\U0001F64F"  # emoticons
                             u"\U0001F300-\U0001F5FF"  # symbols & pictographs
@@ -196,114 +207,227 @@ class TextDataLoader(data.Dataset):
                 self.test_loader = DataLoader(test, batch_size=config.batch_size, shuffle=True, drop_last=True,)
                 self.test_iterations = (len(test) + self.config.batch_size) // self.config.batch_size
             else:
-                anger0_x, anger0_y          = self.parse_oc(self.config.Train_OC_Anger)
-                anger1_x, anger1_y          = self.parse_oc(self.config.Valid_OC_Anger)
-                anger2_x, anger2_y          = self.parse_oc(self.config.Test_OC_Anger)
-                fear0_x, fear0_y            = self.parse_oc(self.config.Train_OC_Fear)
-                fear1_x, fear1_y            = self.parse_oc(self.config.Valid_OC_Fear)
-                fear2_x, fear2_y            = self.parse_oc(self.config.Test_OC_Fear)
-                joy0_x, joy0_y              = self.parse_oc(self.config.Train_OC_Joy)
-                joy1_x, joy1_y              = self.parse_oc(self.config.Valid_OC_Joy)
-                joy2_x, joy2_y              = self.parse_oc(self.config.Test_OC_Joy)
-                sadness0_x, sadness0_y      = self.parse_oc(self.config.Train_OC_Sadness)
-                sadness1_x, sadness1_y      = self.parse_oc(self.config.Valid_OC_Sadness)
-                sadness2_x, sadness2_y      = self.parse_oc(self.config.Test_OC_Sadness)
-                
-                #Do Splitting later followed by sampling
-                pd_anger =  pd.DataFrame({"emotions": anger0_y + anger1_y + anger2_y})
-                pd_anger["text"] = anger0_x + anger1_x + anger2_x
-                pd_joy = pd.DataFrame({"emotions": joy0_y + joy1_y + joy2_y})
-                pd_joy["text"] = joy0_x + joy1_x + joy2_x
-                pd_fear = pd.DataFrame({"emotions": fear0_y + fear1_y + fear2_y})
-                pd_fear["text"] = fear0_x + fear1_x + fear2_x
-                pd_sad = pd.DataFrame({"emotions": sadness0_y + sadness1_y + sadness2_y})
-                pd_sad["text"] = sadness0_x + sadness1_x + sadness2_x
 
-                pd_anger["emotions"] = pd_anger["emotions"].apply(lambda x: x[1])
-                pd_anger["emotions"] = pd_anger["emotions"][pd_anger["emotions"] > self.config.emo_threshold]
-                pd_anger = pd_anger.dropna()
-                pd_anger["emotions"] = pd_anger["emotions"].apply(lambda x: 0)
+                if self.config.load_stored == 'LOAD_npy':
+                    train_tensor = np.load(self.config.out_dir+'train_data.npy',allow_pickle=True)
+                    target_tensor_train = np.load(self.config.out_dir+'train_labels.npy',allow_pickle=True)
+                    train_SEMEVAL_tensor = np.load(self.config.out_dir+'SE_train_data.npy',allow_pickle=True)
+                    target_SEMEVAL_tensor_train = np.load(self.config.out_dir+'SE_train_labels.npy',allow_pickle=True)
+                    valid_tensor = np.load(self.config.out_dir+'val_data.npy',allow_pickle=True)
+                    target_tensor_val = np.load(self.config.out_dir+'val_labels.npy',allow_pickle=True)
 
-                pd_joy["emotions"] = pd_joy["emotions"].apply(lambda x: x[1])
-                pd_joy["emotions"] = pd_joy["emotions"][pd_joy["emotions"] > self.config.emo_threshold]
-                pd_joy = pd_joy.dropna()
-                pd_joy["emotions"] = pd_joy["emotions"].apply(lambda x: 1)
-
-                pd_fear["emotions"] = pd_fear["emotions"].apply(lambda x: x[1])
-                pd_fear["emotions"] = pd_fear["emotions"][pd_fear["emotions"] > self.config.emo_threshold]
-                pd_fear = pd_fear.dropna()
-                pd_fear["emotions"] = pd_fear["emotions"].apply(lambda x: 2)
-
-                pd_sad["emotions"] = pd_sad["emotions"].apply(lambda x: x[1])
-                pd_sad["emotions"] = pd_sad["emotions"][pd_sad["emotions"] > self.config.emo_threshold]
-                pd_sad = pd_sad.dropna()
-                pd_sad["emotions"] = pd_sad["emotions"].apply(lambda x: 3)
-                
-                data = pd.concat([pd_anger, pd_joy, pd_fear, pd_sad], ignore_index=True)
-
-                data = data.sample(frac=1).reset_index(drop=True)
-
-                if self.config.remove_emoji == 'remove':
-                    data['text'] = data['text'].apply(lambda x: emoji_pattern.sub(r'', x))
-                elif self.config.remove_emoji == 'replace':
-                    data['text'] = data['text'].apply(lambda x:emoji.demojize(x) )
-                
-                if self.config.spacy_token_preprocess == True:
-                    if self.config.lang == 'en':
-                        nlp = spacy.load('en_core_web_sm')
-                    elif self.config.lang == 'es':
-                        nlp = spacy.load('es_core_news_md')
-                    tokenizer = spacy.tokenizer.Tokenizer(nlp.vocab)
-                    data['text'] = data['text'].apply(lambda x: ' '.join([token.text_with_ws for token in nlp(x)]))
-                
-                if self.config.remove_capital == True:
-                    data['text'] = data['text'].apply(lambda x: ' '.join([word.lower() for word in x.split()]))
-                
-                if self.config.remove_stopwords == True:
-                    if self.config.lang == 'en':
-                        nlp = spacy.load('en_core_web_sm')
-                        spacy_stopwords = spacy.lang.en.stop_words.STOP_WORDS
-                    elif self.config.lang == 'es':
-                        nlp = spacy.load('es_core_news_md')
-                        spacy_stopwords = spacy.lang.es.stop_words.STOP_WORDS
+                    my_list = ['anger','joy', 'fear','sadness']
+                    SENTEMO_DataFrame = self.load_from_pickle(directory=self.config.SENT_EMO_Path)
+                    SENTEMO_DataFrame['emotions'] = SENTEMO_DataFrame['emotions'].apply(lambda x: x if x in  my_list else np.NaN)
+                    SENTEMO_DataFrame = SENTEMO_DataFrame.dropna()
+                    SENTEMO_DataFrame = pd.DataFrame({"emotions": SENTEMO_DataFrame["emotions"], "text": SENTEMO_DataFrame["text"]})
+                    SENTEMO_DataFrame['emotions'] = SENTEMO_DataFrame['emotions'].apply(lambda x: my_list.index(x))
                     
-                    data['text'] = data['text'].apply(lambda x: ' '.join([word for word in x.split() if word not in (spacy_stopwords)]))
+                    self.word2idx   =   pickle.load(open(self.config.out_dir+'word2idx.pkl',"rb"))
+                    self.idx2word   =   pickle.load(open(self.config.out_dir+'idx2word.pkl',"rb"))
+                    self.vocab      =   pickle.load(open(self.config.out_dir+'vocab.pkl',"rb"))
+                    vocab_size      =   len(self.word2idx)
+                    self.config.vocab_size = vocab_size
 
-                data["token_size"] = data["text"].apply(lambda x: len(x.split(' ')))
-                
-                data = data.loc[data['token_size'] < 80].copy()
+                    train = SENTEMO_Data(train_tensor, target_tensor_train)
+                    train_SE = SENTEMO_Data(train_SEMEVAL_tensor, target_SEMEVAL_tensor_train)
+                    valid = SENTEMO_Data(valid_tensor, target_tensor_val)
+                    
+                    self.train_loader = DataLoader(train, batch_size=config.batch_size*128, shuffle=True, drop_last=True)
+                    self.train_SE_loader = DataLoader(train_SE, batch_size=config.batch_size, shuffle=True, drop_last=True)
+                    self.valid_loader = DataLoader(valid, batch_size=1, shuffle=True, drop_last=False)
 
-                self.create_index(data["text"].values.tolist())
-                input_tensor = [[self.word2idx[s] for s in es.split(' ')]  for es in data["text"].values.tolist()]
-                max_length_inp = self.max_length(input_tensor)
-                input_tensor = [self.pad_sequences(x, max_length_inp) for x in input_tensor]
-                emotions = list(set(data.emotions.unique()))
-                # binarizer
-                mlb = preprocessing.MultiLabelBinarizer()
-                data_labels =  [set(emos) & set(emotions) for emos in data[['emotions']].values]
-                bin_emotions = mlb.fit_transform(data_labels)
-                target_tensor = np.array(bin_emotions.tolist())
+                    self.train_iterations = (len(train) + (self.config.batch_size*128)) // (self.config.batch_size*128)
+                    self.train_SE_iterations = (len(train_SE) + self.config.batch_size) // self.config.batch_size
+                    self.valid_iterations = len(valid)
+                else:
+                    anger0_x, anger0_y          = self.parse_oc(self.config.Train_OC_Anger)
+                    fear0_x, fear0_y            = self.parse_oc(self.config.Train_OC_Fear)
+                    joy0_x, joy0_y              = self.parse_oc(self.config.Train_OC_Joy)
+                    sadness0_x, sadness0_y      = self.parse_oc(self.config.Train_OC_Sadness)
 
-                input_tensor_train, input_tensor_val, target_tensor_train, target_tensor_val = train_test_split(input_tensor, target_tensor, test_size=0.2)
-                input_tensor_val, input_tensor_test, target_tensor_val, target_tensor_test = train_test_split(input_tensor_val, target_tensor_val, test_size=0.5)
-                
-                #for Infernce
-                self.test_data = input_tensor_test
-                self.test_labels = target_tensor_test
+                    anger1_x, anger1_y          = self.parse_oc(self.config.Valid_OC_Anger)
+                    fear1_x, fear1_y            = self.parse_oc(self.config.Valid_OC_Fear)
+                    joy1_x, joy1_y              = self.parse_oc(self.config.Valid_OC_Joy)
+                    sadness1_x, sadness1_y      = self.parse_oc(self.config.Valid_OC_Sadness)
 
-                train = SENTEMO_Data(input_tensor_train, target_tensor_train)
-                valid = SENTEMO_Data(input_tensor_val, target_tensor_val)
-                test = SENTEMO_Data(input_tensor_test, target_tensor_test)
+                    if self.config.add_extra_data == 'SENTEMO':
+                        my_list = ['anger','joy', 'fear','sadness']
+                        SENTEMO_DataFrame = self.load_from_pickle(directory=self.config.SENT_EMO_Path)
+                        SENTEMO_DataFrame['emotions'] = SENTEMO_DataFrame['emotions'].apply(lambda x: x if x in  my_list else np.NaN)
+                        SENTEMO_DataFrame = SENTEMO_DataFrame.dropna()
+                        SENTEMO_DataFrame = pd.DataFrame({"emotions": SENTEMO_DataFrame["emotions"], "text": SENTEMO_DataFrame["text"]})
+                        SENTEMO_DataFrame['emotions'] = SENTEMO_DataFrame['emotions'].apply(lambda x: my_list.index(x))
+                    
+                    #Preparing dataframes
+                    pd_anger =  pd.DataFrame({"emotions": anger0_y })
+                    pd_anger["text"] = anger0_x
+                    pd_joy = pd.DataFrame({"emotions": joy0_y })
+                    pd_joy["text"] = joy0_x
+                    pd_fear = pd.DataFrame({"emotions": fear0_y })
+                    pd_fear["text"] = fear0_x
+                    pd_sad = pd.DataFrame({"emotions": sadness0_y})
+                    pd_sad["text"] = sadness0_x
 
-                self.train_loader = DataLoader(train, batch_size=config.batch_size, shuffle=True, drop_last=True,)
-                self.valid_loader = DataLoader(valid, batch_size=config.batch_size, shuffle=True, drop_last=True,)
-                self.test_loader = DataLoader(test, batch_size=config.batch_size, shuffle=True, drop_last=True,)
+                    pd_anger["emotions"] = pd_anger["emotions"].apply(lambda x: x[1])
+                    pd_anger["emotions"] = pd_anger["emotions"][pd_anger["emotions"] > self.config.emo_threshold]
+                    pd_anger = pd_anger.dropna()
+                    pd_anger["emotions"] = pd_anger["emotions"].apply(lambda x: 0)
 
-                self.train_iterations = (len(train) + self.config.batch_size) // self.config.batch_size
-                self.valid_iterations = (len(valid) + self.config.batch_size) // self.config.batch_size
-                self.test_iterations = (len(test) + self.config.batch_size) // self.config.batch_size
-                
-                self.config.vocab_size = len(self.word2idx)
+                    pd_joy["emotions"] = pd_joy["emotions"].apply(lambda x: x[1])
+                    pd_joy["emotions"] = pd_joy["emotions"][pd_joy["emotions"] > self.config.emo_threshold]
+                    pd_joy = pd_joy.dropna()
+                    pd_joy["emotions"] = pd_joy["emotions"].apply(lambda x: 1)
+
+                    pd_fear["emotions"] = pd_fear["emotions"].apply(lambda x: x[1])
+                    pd_fear["emotions"] = pd_fear["emotions"][pd_fear["emotions"] > self.config.emo_threshold]
+                    pd_fear = pd_fear.dropna()
+                    pd_fear["emotions"] = pd_fear["emotions"].apply(lambda x: 2)
+
+                    pd_sad["emotions"] = pd_sad["emotions"].apply(lambda x: x[1])
+                    pd_sad["emotions"] = pd_sad["emotions"][pd_sad["emotions"] > self.config.emo_threshold]
+                    pd_sad = pd_sad.dropna()
+                    pd_sad["emotions"] = pd_sad["emotions"].apply(lambda x: 3)
+
+                    train_data = pd.concat([pd_anger, pd_joy, pd_fear, pd_sad, SENTEMO_DataFrame], ignore_index=True)
+                    train_SEMEVAL_data = pd.concat([pd_anger, pd_joy, pd_fear, pd_sad], ignore_index=True)
+                    
+                    pd_anger =  pd.DataFrame({"emotions": anger1_y })
+                    pd_anger["text"] = anger1_x
+                    pd_joy = pd.DataFrame({"emotions": joy1_y })
+                    pd_joy["text"] = joy1_x
+                    pd_fear = pd.DataFrame({"emotions": fear1_y })
+                    pd_fear["text"] = fear1_x
+                    pd_sad = pd.DataFrame({"emotions": sadness1_y})
+                    pd_sad["text"] = sadness1_x
+
+                    pd_anger["emotions"] = pd_anger["emotions"].apply(lambda x: x[1])
+                    pd_anger["emotions"] = pd_anger["emotions"][pd_anger["emotions"] > self.config.emo_threshold]
+                    pd_anger = pd_anger.dropna()
+                    pd_anger["emotions"] = pd_anger["emotions"].apply(lambda x: 0)
+
+                    pd_joy["emotions"] = pd_joy["emotions"].apply(lambda x: x[1])
+                    pd_joy["emotions"] = pd_joy["emotions"][pd_joy["emotions"] > self.config.emo_threshold]
+                    pd_joy = pd_joy.dropna()
+                    pd_joy["emotions"] = pd_joy["emotions"].apply(lambda x: 1)
+
+                    pd_fear["emotions"] = pd_fear["emotions"].apply(lambda x: x[1])
+                    pd_fear["emotions"] = pd_fear["emotions"][pd_fear["emotions"] > self.config.emo_threshold]
+                    pd_fear = pd_fear.dropna()
+                    pd_fear["emotions"] = pd_fear["emotions"].apply(lambda x: 2)
+
+                    pd_sad["emotions"] = pd_sad["emotions"].apply(lambda x: x[1])
+                    pd_sad["emotions"] = pd_sad["emotions"][pd_sad["emotions"] > self.config.emo_threshold]
+                    pd_sad = pd_sad.dropna()
+                    pd_sad["emotions"] = pd_sad["emotions"].apply(lambda x: 3)
+
+                    valid_data = pd.concat([pd_anger, pd_joy, pd_fear, pd_sad], ignore_index=True)
+
+                    if self.config.TRAINING_DATA == 'STRONG':
+                        train_data = train_SEMEVAL_data.sample(frac=1).reset_index(drop=True)
+                    else:
+                        train_data = train_data.sample(frac=1).reset_index(drop=True)
+                    train_SEMEVAL_data = train_SEMEVAL_data.sample(frac=1).reset_index(drop=True)
+                    valid_data = valid_data.sample(frac=1).reset_index(drop=True)
+
+                    if self.config.remove_emoji == 'remove':
+                        train_data['text'] = train_data['text'].apply(lambda x: emoji_pattern.sub(r'', x))
+                        train_SEMEVAL_data['text'] = train_SEMEVAL_data['text'].apply(lambda x: emoji_pattern.sub(r'', x))
+                        valid_data['text'] = valid_data['text'].apply(lambda x: emoji_pattern.sub(r'', x))
+                    elif self.config.remove_emoji == 'replace':
+                        train_data['text'] = train_data['text'].apply(lambda x:emoji.demojize(x) )
+                        train_SEMEVAL_data['text'] = train_SEMEVAL_data['text'].apply(lambda x:emoji.demojize(x) )
+                        valid_data['text'] = valid_data['text'].apply(lambda x:emoji.demojize(x) )
+                    
+                    if self.config.spacy_token_preprocess == True:
+                        if self.config.lang == 'en':
+                            nlp = spacy.load('en_core_web_sm')
+                        elif self.config.lang == 'es':
+                            nlp = spacy.load('es_core_news_md')
+                        tokenizer = spacy.tokenizer.Tokenizer(nlp.vocab)
+                        train_data['text'] = train_data['text'].apply(lambda x: ' '.join([token.text_with_ws for token in nlp(x)]))
+                        train_SEMEVAL_data['text'] = train_SEMEVAL_data['text'].apply(lambda x: ' '.join([token.text_with_ws for token in nlp(x)]))
+                        valid_data['text'] = valid_data['text'].apply(lambda x: ' '.join([token.text_with_ws for token in nlp(x)]))
+                    
+                    if self.config.remove_capital == True:
+                        train_data['text'] = train_data['text'].apply(lambda x: ' '.join([word.lower() for word in x.split()]))
+                        train_SEMEVAL_data['text'] = train_SEMEVAL_data['text'].apply(lambda x: ' '.join([word.lower() for word in x.split()]))
+                        valid_data['text'] = valid_data['text'].apply(lambda x: ' '.join([word.lower() for word in x.split()]))
+                    
+                    if self.config.remove_stopwords == True:
+                        if self.config.lang == 'en':
+                            nlp = spacy.load('en_core_web_sm')
+                            spacy_stopwords = spacy.lang.en.stop_words.STOP_WORDS
+                        elif self.config.lang == 'es':
+                            nlp = spacy.load('es_core_news_md')
+                            spacy_stopwords = spacy.lang.es.stop_words.STOP_WORDS
+                        
+                        train_data['text'] = train_data['text'].apply(lambda x: ' '.join([word for word in x.split() if word not in (spacy_stopwords)]))
+                        train_SEMEVAL_data['text'] = train_SEMEVAL_data['text'].apply(lambda x: ' '.join([word for word in x.split() if word not in (spacy_stopwords)]))
+                        valid_data['text'] = valid_data['text'].apply(lambda x: ' '.join([word for word in x.split() if word not in (spacy_stopwords)]))
+
+                    train_data["token_size"] = train_data["text"].apply(lambda x: len(x.split(' ')))
+                    train_SEMEVAL_data["token_size"] = train_SEMEVAL_data["text"].apply(lambda x: len(x.split(' ')))
+                    valid_data["token_size"] = valid_data["text"].apply(lambda x: len(x.split(' ')))
+                    
+                    train_data = train_data.loc[train_data['token_size'] < 100].copy()
+
+                    self.create_index(train_data["text"].values.tolist())
+                    print("Vocab Size: '{}'".format(len(self.word2idx)))
+                    train_tensor = [[self.word2idx[s] for s in es.split(' ')]  for es in train_data["text"].values.tolist()]
+                    max_length_inp = self.max_length(train_tensor)
+                    train_tensor = [self.pad_sequences(x, max_length_inp) for x in train_tensor]
+                    emotions = list(set(train_data.emotions.unique()))
+
+                    train_SEMEVAL_tensor = [[self.word2idx[s] for s in es.split(' ')]  for es in train_SEMEVAL_data["text"].values.tolist()]
+                    max_length_inp = self.max_length(train_SEMEVAL_tensor)
+                    train_SEMEVAL_tensor = [self.pad_sequences(x, max_length_inp) for x in train_SEMEVAL_tensor]
+
+                    valid_tensor = [[self.word2idx[s] for s in es.split(' ') if s in self.word2idx.keys()]  for es in valid_data["text"].values.tolist()]
+                    max_length_inp = self.max_length(valid_tensor)
+                    valid_tensor = [self.pad_sequences(x, max_length_inp) for x in valid_tensor]
+                    
+                    # binarizer
+                    mlb = preprocessing.MultiLabelBinarizer()
+
+                    train_labels =  [set(emos) & set(emotions) for emos in train_data[['emotions']].values]
+                    bin_emotions = mlb.fit_transform(train_labels)
+                    target_tensor_train = np.array(bin_emotions.tolist())
+
+                    train_SEMEVAL_labels =  [set(emos) & set(emotions) for emos in train_SEMEVAL_data[['emotions']].values]
+                    bin_emotions = mlb.fit_transform(train_SEMEVAL_labels)
+                    target_SEMEVAL_tensor_train = np.array(bin_emotions.tolist())
+
+                    valid_labels =  [set(emos) & set(emotions) for emos in valid_data[['emotions']].values]
+                    bin_emotions = mlb.fit_transform(valid_labels)
+                    target_tensor_val = np.array(bin_emotions.tolist())
+
+                    #Saving for reading later
+                    np.save(self.config.out_dir+'train_data.npy',train_tensor,allow_pickle=True)
+                    np.save(self.config.out_dir+'train_labels.npy',target_tensor_train,allow_pickle=True)
+                    np.save(self.config.out_dir+'SE_train_data.npy',train_SEMEVAL_tensor,allow_pickle=True)
+                    np.save(self.config.out_dir+'SE_train_labels.npy',target_SEMEVAL_tensor_train,allow_pickle=True)
+                    np.save(self.config.out_dir+'val_data.npy',valid_tensor,allow_pickle=True)
+                    np.save(self.config.out_dir+'val_labels.npy',target_tensor_val,allow_pickle=True)
+                    self.convert_to_pickle(self.word2idx, self.config.out_dir+'word2idx.pkl')
+                    self.convert_to_pickle(self.idx2word, self.config.out_dir+'idx2word.pkl')
+                    self.convert_to_pickle(self.vocab, self.config.out_dir+'vocab.pkl')
+                    self.config.vocab_size = len(self.word2idx)
+                    vocab_size = {'embedded_dim':self.config.vocab_size}
+
+                    train = SENTEMO_Data(train_tensor, target_tensor_train)
+                    train_SE = SENTEMO_Data(train_SEMEVAL_tensor, target_SEMEVAL_tensor_train)
+                    valid = SENTEMO_Data(valid_tensor, target_tensor_val)
+
+                    self.train_loader = DataLoader(train, batch_size=config.batch_size, shuffle=True, drop_last=True)
+                    self.train_SE_loader = DataLoader(train_SE, batch_size=config.batch_size, shuffle=True, drop_last=True)
+                    self.valid_loader = DataLoader(valid, batch_size=1, shuffle=True, drop_last=False)
+
+                    self.train_iterations = (len(train) + self.config.batch_size) // self.config.batch_size
+                    self.train_SE_iterations = (len(train_SE) + self.config.batch_size) // self.config.batch_size
+                    self.valid_iterations = len(valid)
+                    
+                    self.config.vocab_size = len(self.word2idx)
         elif self.config.data_type == 'IEMOCAP':
             raise NotImplementedError("This mode is not implemented YET")
             #utterances, videoSpeakers, videoLabels, videoText, videoAudio, videoVisual, transcripts, scripts, testVid = self.load_from_pickle(directory=self.config.pickle_path, encoding=self.config.pickle_encoding)
@@ -317,8 +441,7 @@ class TextDataLoader(data.Dataset):
             #    self.data_text.append(transcripts[vid])
             #Create Vocab
 
-            #Padding
-        
+            #Padding      
         else:
             raise Exception("Please specify in the json a specified mode in data_mode")
         

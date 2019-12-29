@@ -133,10 +133,18 @@ class SENTEMO_Agent(BaseAgent):
         Main training loop
         :return:
         """
+        strong_freq_counter = 0
         for epoch in range(self.current_epoch, self.config.max_epoch):
             self.current_epoch = epoch
             #self.scheduler.step(epoch)
-            self.train_one_epoch()
+            if self.config.TRAINING_DATA == "USE_ALTERNATE":
+                if (strong_freq_counter % self.config.ALTERNATE_STRONG_FREQ) == 0:
+                    self.train_one_epoch("WEAK")
+                else:
+                    self.train_one_epoch("STRONG")
+                strong_freq_counter += 1
+            else:
+                self.train_one_epoch()
 
             valid_accuracy , valid_loss = self.validate()
             self.scheduler.step(valid_loss)
@@ -147,15 +155,20 @@ class SENTEMO_Agent(BaseAgent):
 
             self.save_checkpoint(is_best=is_best)
 
-    def train_one_epoch(self):
+    def train_one_epoch(self, data_type = "None"):
         """
         One epoch of training
         :return:
         """
         # Initialize tqdm
-        tqdm_batch = tqdm(self.data_loader.train_loader, total=self.data_loader.train_iterations,
-                          desc="Epoch-{}-".format(self.current_epoch))
-        
+        if data_type == "STRONG":
+            tqdm_batch = tqdm(self.data_loader.train_SE_loader, total=self.data_loader.train_SE_iterations,
+                desc="Epoch-{}-".format(self.current_epoch))
+            print( "Training with SEMEVAL data" )
+        else:
+            tqdm_batch = tqdm(self.data_loader.train_loader, total=self.data_loader.train_iterations,
+                            desc="Epoch-{}-".format(self.current_epoch))
+            print( "Training with All week data and SEMEVAL data" )
         self.model.train()
 
         # Initialize your average meters

@@ -1,5 +1,5 @@
 {
-  "exp_name": "EMO_RECO_exp_4",
+  "exp_name": "EMO_RECO_exp_10",
   "agent": "SENTEMO_Agent",
   "mode": "train",
 
@@ -10,7 +10,7 @@
   "num_classes": 4,
   "class_weights": "",
 
-  "vocab_size": 27664,
+  "vocab_size": 77309,
   "embedding_dim": 300,
   "n_layers": 1,
   "hiddenUnits": 1024,
@@ -20,20 +20,22 @@
   "emo_threshold": 1,
   "learning_rate": 1e-3,
   "learning_rate_patience": 100,
-  "weight_decay": 1e-3,
+  "weight_decay": 1e-5,
   "eps": 1e-8,
   "betas": [0.9, 0.999],
   "momentum": 0.99,
   "remove_stopwords": true,
   "remove_capital": true,
   "spacy_token_preprocess": true,
-  "remove_emoji": "replace",
-  "batch_size": 128,
-  "max_epoch": 25,
+  "remove_emoji": "none",
+  "batch_size": 8,
+  "max_epoch": 100,
   "lang": "en",
-
+  "add_extra_data": "SENTEMO",
   "validate_every": 2,
-
+  "SENT_EMO_Path": "./data/SENTEMO.pkl",
+  "TRAINING_DATA": "STRONG",
+  "ALTERNATE_STRONG_FREQ": 15,
   "checkpoint_file": "checkpoint.pth.tar",
 
   "data_loader": "Text_loader",
